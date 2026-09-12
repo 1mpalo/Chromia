@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -22,17 +20,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.impalo.core.ui.theme.ChromiaTheme
 import com.impalo.core.ui.theme.InterDisplayFontFamily
 import com.impalo.core.ui.theme.InterFontFamily
-import com.impalo.core.ui.theme.Neutral800
 import com.impalo.core.ui.theme.Neutral900
-import com.impalo.core.ui.theme.Neutral950
-import com.impalo.features.importer.components.ChromiaIcon
+import com.impalo.core.ui.common.ChromiaIcon
+import com.impalo.features.R
 
 @Composable
 fun ImportScreen(
@@ -80,7 +76,7 @@ fun ImportScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        painter = painterResource(R.drawable.add_ic),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface.copy(0.6f)
                     )
