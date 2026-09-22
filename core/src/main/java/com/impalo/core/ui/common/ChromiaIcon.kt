@@ -4,6 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +19,7 @@ import kotlin.math.PI
 @Composable
 fun ChromiaIcon(
     modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground
 ) {
     Canvas(
         modifier = modifier.size(44.dp)
@@ -33,13 +35,13 @@ fun ChromiaIcon(
         val gapLength = segmentLength * 0.5f
 
         drawCircle(
-            color = Color.Gray,
+            color = color,
             radius = outerRadius,
             style = Stroke(width = 1.5.dp.toPx())
         )
 
         drawCircle(
-            color = Color.Gray,
+            color = color,
             radius = dashRadius,
             style = Stroke(
                 width = 1.3 .dp.toPx(),
@@ -51,7 +53,7 @@ fun ChromiaIcon(
         )
 
         drawCircle(
-            color = Color.Gray,
+            color = color,
             radius = innerRadius
         )
 

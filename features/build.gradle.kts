@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.impalo.features"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 33
