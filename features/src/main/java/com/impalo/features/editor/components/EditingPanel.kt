@@ -2,7 +2,6 @@ package com.impalo.features.editor.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -11,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -22,30 +19,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.impalo.core.ui.theme.InterFontFamily
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 
 @Composable
-fun EditingSelector(
+fun EditingPanel(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.background(MaterialTheme.colorScheme.surfaceContainer),
+        modifier = modifier
+            .fillMaxHeight()
+            .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
-
-        HorizontalDivider(
-            color = MaterialTheme.colorScheme.inversePrimary
-        )
 
         CategorySelector()
 
         HorizontalDivider(
-            color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.5f),
+            color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.7f),
             thickness = 0.3.dp
         )
 
@@ -53,7 +46,7 @@ fun EditingSelector(
 
         SubCategoryItem(
             text = "Exposure",
-            isSelected = true,
+            value = "0.0",
             onClick = {}
         )
 
@@ -70,24 +63,28 @@ fun EditingSelector(
 fun SubCategoryItem(
     modifier: Modifier = Modifier,
     text: String,
-    isSelected: Boolean,
+    value: String,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(
-                if(isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent
-            ),
-        contentAlignment = Alignment.Center
+    Row(
+        modifier = modifier.padding(horizontal = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 2.dp),
             text = text,
             fontFamily = InterFontFamily,
-            color = if(isSelected) MaterialTheme.colorScheme.onBackground
-            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            text = value,
+            fontFamily = InterFontFamily,
+            color = MaterialTheme.colorScheme.onBackground,
+            fontSize = 16.sp,
             textAlign = TextAlign.Center,
         )
     }
@@ -130,7 +127,6 @@ fun RowScope.CategoryItem(
 @Composable
 fun CategorySelector() {
 
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -139,40 +135,30 @@ fun CategorySelector() {
     ) {
         CategoryItem(
             text = "LIGHT",
-            weight = 0.12f,
+            weight = 0.25f,
             isSelected = false,
             onClick = {}
         )
 
         CategoryItem(
             text = "COLOR",
-            weight = 0.12f,
+            weight = 0.25f,
             isSelected = false,
             onClick = {}
         )
 
         CategoryItem(
             text = "CURVES",
-            weight = 0.12f,
+            weight = 0.25f,
             isSelected = true,
             onClick = {}
         )
 
         CategoryItem(
             text = "LUT",
-            weight = 0.12f,
+            weight = 0.25f,
             isSelected = false,
             onClick = {}
-        )
-
-        Spacer(modifier = Modifier.weight(0.52f))
-
-        Text(
-
-            text = "Reset",
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
-            fontFamily = InterFontFamily,
-            fontSize = 12.sp
         )
     }
 

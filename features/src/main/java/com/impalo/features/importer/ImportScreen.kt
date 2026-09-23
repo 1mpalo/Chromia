@@ -28,6 +28,7 @@ import com.impalo.core.ui.theme.InterDisplayFontFamily
 import com.impalo.core.ui.theme.InterFontFamily
 import com.impalo.core.ui.theme.Neutral900
 import com.impalo.core.ui.common.ChromiaIcon
+import com.impalo.core.ui.theme.Neutral850
 import com.impalo.features.R
 
 @Composable
@@ -67,7 +68,7 @@ fun ImportScreen(
             Surface(
                 onClick = onOpenFootageClicked,
                 shape = RoundedCornerShape(16.dp),
-                color = Neutral900,
+                color = Neutral850,
                 border = BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceBright),
             ) {
                 Column(

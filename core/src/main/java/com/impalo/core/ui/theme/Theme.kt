@@ -33,7 +33,7 @@ private val DarkColorScheme = darkColorScheme(
     onTertiaryContainer = Neutral200,
 
     // Общий фон.
-    background = Neutral950,
+    background = Neutral900,
     onBackground = Neutral200,
 
     // Основные поверхности и содержимое.
@@ -96,7 +96,7 @@ private val LightColorScheme = lightColorScheme(
     onTertiaryContainer = Neutral200,
 
     // Общий фон.
-    background = Neutral950,
+    background = Neutral900,
     onBackground = Neutral200,
 
     // Основные поверхности и содержимое.
