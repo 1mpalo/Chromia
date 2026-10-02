@@ -1,6 +1,7 @@
 package com.impalo.features.editor.components
 
 import android.net.Uri
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -10,9 +11,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
+import androidx.media3.common.util.Log
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.impalo.media.IdentityGlEffect
 
+@OptIn(UnstableApi::class)
 @Composable
 fun rememberChromiaPlayer(
     uri: Uri
@@ -20,7 +28,11 @@ fun rememberChromiaPlayer(
 
     val applicationContext = LocalContext.current.applicationContext
     val player = remember(applicationContext) {
-        ExoPlayer.Builder(applicationContext).build()
+        ExoPlayer.Builder(applicationContext).build().also { exoPlayer ->
+            exoPlayer.setVideoEffects(
+                listOf<Effect>(IdentityGlEffect())
+            )
+        }
     }
 
     var resumeAfterForeground by remember {

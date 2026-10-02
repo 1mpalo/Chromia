@@ -2,6 +2,7 @@ package com.impalo.features.editor.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -10,11 +11,18 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -23,19 +31,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.impalo.core.ui.theme.InterFontFamily
-import androidx.compose.ui.Alignment
 
 @Composable
 fun EditingPanel(
     modifier: Modifier = Modifier
 ) {
+
+    var selectedCategory by remember { mutableStateOf(Category.LIGHT) }
+    val tools = toolsFor(selectedCategory)
+
     Column(
         modifier = modifier
             .fillMaxHeight()
             .background(MaterialTheme.colorScheme.surfaceContainer),
     ) {
 
-        CategorySelector()
+        CategoryBar(
+            selectedCategory = selectedCategory,
+            onCategoryClicked = { selectedCategory = it }
+        )
 
         HorizontalDivider(
             color = MaterialTheme.colorScheme.inversePrimary.copy(alpha = 0.7f),
@@ -44,49 +58,95 @@ fun EditingPanel(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        SubCategoryItem(
-            text = "Exposure",
-            value = "0.0",
-            onClick = {}
-        )
-
-        Slider(
-            modifier = Modifier.fillMaxWidth(),
-            value = 0.4f,
-            onValueChange = {}
-        )
+        ToolsList(tools = tools)
 
     }
 }
 
+private fun toolsFor(selectedCategory: Category): List<Tool> {
+    return when (selectedCategory) {
+        Category.LIGHT -> listOf(
+            Tool.EXPOSURE,
+            Tool.CONTRAST,
+            Tool.HIGHLIGHTS,
+            Tool.SHADOWS,
+            Tool.WHITES,
+            Tool.BLACKS
+        )
+
+        Category.COLOR -> listOf(
+            Tool.TEMP,
+            Tool.TINT,
+            Tool.SATURATION,
+            Tool.VIBRANCE
+        )
+
+        Category.CURVES -> listOf(
+            Tool.RGB,
+            Tool.R,
+            Tool.B,
+            Tool.G
+        )
+
+        Category.LUT -> emptyList()
+    }
+}
+
 @Composable
-fun SubCategoryItem(
+fun ToolsList(
     modifier: Modifier = Modifier,
-    text: String,
-    value: String,
-    onClick: () -> Unit
+    tools: List<Tool>
 ) {
-    Row(
-        modifier = modifier.padding(horizontal = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(36.dp)
     ) {
-        Text(
-            text = text,
-            fontFamily = InterFontFamily,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-        )
+        items(tools) { tool ->
+            if(tool.control is ControlSpec.Slider) {
+                var value by remember {
+                    mutableFloatStateOf(tool.control.defaultValue)
+                }
 
-        Spacer(modifier = Modifier.weight(1f))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = tool.title,
+                            fontFamily = InterFontFamily,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center,
+                        )
 
-        Text(
-            text = value,
-            fontFamily = InterFontFamily,
-            color = MaterialTheme.colorScheme.onBackground,
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-        )
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        Text(
+                            text = "$value ${tool.control.suffix}",
+                            fontFamily = InterFontFamily,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    CustomSlider(
+                        value = value,
+                        onValueChange = { value = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.White,
+                        range = tool.control.range,
+                        fillFrom = tool.control.fillFrom,
+                        defaultValue = tool.control.defaultValue
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -95,13 +155,11 @@ fun SubCategoryItem(
 fun RowScope.CategoryItem(
     modifier: Modifier = Modifier,
     text: String,
-    weight: Float,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Text(
         modifier = modifier
-            .weight(weight)
             .drawBehind {
                 if (isSelected) {
                     drawLine(
@@ -112,12 +170,11 @@ fun RowScope.CategoryItem(
                     )
                 }
             }
-            .clickable{onClick()}
-        ,
+            .clickable { onClick() },
         text = text,
         fontFamily = InterFontFamily,
-        color = if(isSelected) MaterialTheme.colorScheme.onBackground
-            else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
+        color = if (isSelected) MaterialTheme.colorScheme.onBackground
+        else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
         fontSize = 14.sp,
         textAlign = TextAlign.Center,
     )
@@ -125,41 +182,23 @@ fun RowScope.CategoryItem(
 
 //TODO решить что с этим делать, тоже может выкинуть
 @Composable
-fun CategorySelector() {
-
+fun CategoryBar(
+    selectedCategory: Category,
+    onCategoryClicked: (Category) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .padding(end = 18.dp)
     ) {
-        CategoryItem(
-            text = "LIGHT",
-            weight = 0.25f,
-            isSelected = false,
-            onClick = {}
-        )
-
-        CategoryItem(
-            text = "COLOR",
-            weight = 0.25f,
-            isSelected = false,
-            onClick = {}
-        )
-
-        CategoryItem(
-            text = "CURVES",
-            weight = 0.25f,
-            isSelected = true,
-            onClick = {}
-        )
-
-        CategoryItem(
-            text = "LUT",
-            weight = 0.25f,
-            isSelected = false,
-            onClick = {}
-        )
+        for (item in Category.entries) {
+            CategoryItem(
+                text = item.categoryName,
+                modifier = Modifier.weight(1f),
+                isSelected = selectedCategory == item,
+                onClick = { onCategoryClicked(item) }
+            )
+        }
     }
-
 }
