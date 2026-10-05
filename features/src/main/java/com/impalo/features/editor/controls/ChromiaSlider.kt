@@ -1,4 +1,4 @@
-package com.impalo.features.editor.components
+package com.impalo.features.editor.controls
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures

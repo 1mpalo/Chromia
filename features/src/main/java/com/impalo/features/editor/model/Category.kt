@@ -1,4 +1,4 @@
-package com.impalo.features.editor.components
+package com.impalo.features.editor.model
 
 enum class Category(val categoryName: String) {
     LIGHT("LIGHT"),

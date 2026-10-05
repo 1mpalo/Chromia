@@ -1,4 +1,4 @@
-package com.impalo.features.editor.components
+package com.impalo.features.editor.playback
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable

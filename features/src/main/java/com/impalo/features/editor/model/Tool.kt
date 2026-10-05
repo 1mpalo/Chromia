@@ -1,4 +1,4 @@
-package com.impalo.features.editor.components
+package com.impalo.features.editor.model
 
 enum class Tool(
     val title: String,
@@ -9,9 +9,10 @@ enum class Tool(
         title = "Exposure",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
-            range = -2f..2f,
+            range = -4f..4f,
             defaultValue = 0f,
-            suffix = "EV"
+            suffix = "EV",
+            decimalPlaces = 1
         )
     ),
     CONTRAST(
@@ -26,7 +27,7 @@ enum class Tool(
         title = "Highlights",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -34,7 +35,7 @@ enum class Tool(
         title = "Shadows",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -42,7 +43,7 @@ enum class Tool(
         title = "White",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -50,7 +51,7 @@ enum class Tool(
         title = "Blacks",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
-            range = 0f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -58,7 +59,7 @@ enum class Tool(
         title = "Temp",
         category = Category.COLOR,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -66,7 +67,7 @@ enum class Tool(
         title = "Tint",
         category = Category.COLOR,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -74,15 +75,16 @@ enum class Tool(
         title = "Saturation",
         category = Category.COLOR,
         control = ControlSpec.Slider(
-            range = -1f..1f,
-            defaultValue = 0f
+            range = 0f..200f,
+            defaultValue = 100f,
+            suffix = "%"
         )
     ),
     VIBRANCE(
         title = "Vibrance",
         category = Category.COLOR,
         control = ControlSpec.Slider(
-            range = -1f..1f,
+            range = -100f..100f,
             defaultValue = 0f
         )
     ),
@@ -113,7 +115,8 @@ sealed interface ControlSpec {
         val range: ClosedFloatingPointRange<Float>,
         val defaultValue: Float,
         val fillFrom: Float = defaultValue,
-        val suffix: String = ""
+        val suffix: String = "",
+        val decimalPlaces: Int = 0
     ) : ControlSpec
 
     data object Curve: ControlSpec
