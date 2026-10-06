@@ -16,7 +16,6 @@ class EditorViewModel : ViewModel() {
     private val _settings = MutableStateFlow<SettingsState>(SettingsState())
     val settings = _settings.asStateFlow()
 
-
     fun onEvent(event: EditorEvents) {
         when(event) {
             is EditorEvents.OnSliderValueChange -> {
@@ -48,6 +47,7 @@ class EditorViewModel : ViewModel() {
 
         return uri.lastPathSegment
     }
+
 
     private fun onToolValueChange(tool: Tool, newValue: Float) {
         val slider = tool.control as? ControlSpec.Slider ?: return

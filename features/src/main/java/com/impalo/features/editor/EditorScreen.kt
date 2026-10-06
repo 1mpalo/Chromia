@@ -36,7 +36,10 @@ fun EditorScreen(
     settings: SettingsState
 ) {
 
-    val player = rememberChromiaPlayer(uri)
+    val player = rememberChromiaPlayer(
+        uri = uri,
+        gradingSettings = settings
+    )
 
     Box(
         modifier = Modifier

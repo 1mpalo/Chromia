@@ -1,5 +1,7 @@
 package com.impalo.features.editor.model
 
+import com.impalo.media.GradingSettings
+
 data class SettingsState (
     val exposure: Float = 0f,
     val contrast: Float = 0f,
@@ -26,4 +28,17 @@ data class SettingsState (
 
         else -> { 0.0f }
     }
+
+    fun toGradingSettings(): GradingSettings = GradingSettings(
+        exposure = exposure,
+        contrast = contrast,
+        highlights = highlights,
+        shadows = shadows,
+        whites = whites,
+        blacks = blacks,
+        temp = temp,
+        tint = tint,
+        saturation = saturation,
+        vibrance = vibrance
+    )
 }

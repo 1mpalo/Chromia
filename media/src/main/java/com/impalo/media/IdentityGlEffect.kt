@@ -14,20 +14,27 @@ import androidx.media3.effect.GlEffect
 import androidx.media3.effect.GlShaderProgram
 
 @OptIn(UnstableApi::class)
-class IdentityGlEffect : GlEffect {
+class IdentityGlEffect(
+    private val settingsHolder: GradingSettingsHolder
+) : GlEffect {
     @OptIn(UnstableApi::class)
     override fun toGlShaderProgram(
         context: Context,
-        useHdr: Boolean
+        useHdr: Boolean,
     ): GlShaderProgram {
-        return IdentityShaderProgram(context, useHdr)
+        return IdentityShaderProgram(
+            context = context,
+            useHdr = useHdr,
+            settings = settingsHolder
+        )
     }
 }
 
 @OptIn(UnstableApi::class)
 private class IdentityShaderProgram(
     context: Context,
-    useHdr: Boolean
+    useHdr: Boolean,
+    private val settings: GradingSettingsHolder
 ) : BaseGlShaderProgram(
     /* useHighPrecisionColorComponents = */ useHdr,
     /* texturePoolCapacity = */ 1
@@ -78,6 +85,11 @@ private class IdentityShaderProgram(
                 "uTexSampler",
                 inputTexId,
                 0
+            )
+
+            glProgram.setFloatUniform(
+                "uExposure",
+                settings.snapshot().exposure
             )
 
             glProgram.bindAttributesAndUniforms()

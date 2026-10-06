@@ -5,6 +5,7 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,19 +16,35 @@ import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import com.impalo.features.editor.model.SettingsState
+import com.impalo.media.GradingSettings
+import com.impalo.media.GradingSettingsHolder
 import com.impalo.media.IdentityGlEffect
 
 @OptIn(UnstableApi::class)
 @Composable
 fun rememberChromiaPlayer(
-    uri: Uri
+    uri: Uri,
+    gradingSettings: SettingsState
 ) : ExoPlayer {
+
+    val settingsHolder = remember {
+        GradingSettingsHolder()
+    }
+
+    SideEffect{
+        settingsHolder.update(
+            gradingSettings.toGradingSettings()
+        )
+    }
 
     val applicationContext = LocalContext.current.applicationContext
     val player = remember(applicationContext) {
         ExoPlayer.Builder(applicationContext).build().also { exoPlayer ->
             exoPlayer.setVideoEffects(
-                listOf<Effect>(IdentityGlEffect())
+                listOf<Effect>(IdentityGlEffect(
+                    settingsHolder = settingsHolder
+                ))
             )
         }
     }
