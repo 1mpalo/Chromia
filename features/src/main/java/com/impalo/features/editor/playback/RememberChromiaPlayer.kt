@@ -14,6 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaLibraryInfo
+import androidx.media3.common.Player
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.impalo.features.editor.model.SettingsState
@@ -46,6 +49,18 @@ fun rememberChromiaPlayer(
                     settingsHolder = settingsHolder
                 ))
             )
+
+            exoPlayer.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_READY) {
+                        Log.d(
+                            "ChromiaColor",
+                            "Media3=${MediaLibraryInfo.VERSION}, " +
+                                    "colorInfo=${exoPlayer.videoFormat?.colorInfo}"
+                        )
+                    }
+                }
+            })
         }
     }
 
