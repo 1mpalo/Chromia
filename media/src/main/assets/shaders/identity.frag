@@ -7,8 +7,46 @@ in vec2 vTexCoord;
 
 //grading parameters
 uniform float uExposure;
+uniform float uContrast;
 
 out vec4 fragColor;
+
+float decodeSdrChannel(float encoded);
+vec3 decodeSdr(vec3 encodedRgb);
+float encodeSdrChannel(float linearValue);
+vec3 encodeSdr(vec3 linearRgb);
+vec3 applyContrast(vec3 linearRgb, float contrastFactor);
+
+void main() {
+    vec4 sourceColor = texture(uTexSampler, vTexCoord);
+
+    if (uExposure == 0.0 && uContrast == 0.0) {
+    fragColor = sourceColor;
+        return;
+    }
+
+    vec3 linearRgb = decodeSdr(sourceColor.rgb);
+
+    // exposure
+    linearRgb *= exp2(uExposure);
+
+    float contrastFactor = exp2(uContrast / 100.0);
+
+    linearRgb = applyContrast(
+        linearRgb,
+        contrastFactor
+    );
+
+    vec3 encodedRgb = encodeSdr(
+        max(linearRgb, vec3(0.0))
+    );
+
+
+    fragColor = vec4(
+        clamp(encodedRgb, 0.0, 1.0),
+        sourceColor.a
+    );
+}
 
 float decodeSdrChannel(float encoded) {
     if (encoded < 0.0812) {
@@ -16,16 +54,16 @@ float decodeSdrChannel(float encoded) {
     }
 
     return pow(
-        (encoded + 0.099) / 1.099,
-        1.0 / 0.45
+            (encoded + 0.099) / 1.099,
+            1.0 / 0.45
     );
 }
 
 vec3 decodeSdr(vec3 encodedRgb) {
     return vec3(
-        decodeSdrChannel(encodedRgb.r),
-        decodeSdrChannel(encodedRgb.g),
-        decodeSdrChannel(encodedRgb.b)
+            decodeSdrChannel(encodedRgb.r),
+            decodeSdrChannel(encodedRgb.g),
+            decodeSdrChannel(encodedRgb.b)
     );
 }
 
@@ -39,31 +77,34 @@ float encodeSdrChannel(float linearValue) {
 
 vec3 encodeSdr(vec3 linearRgb) {
     return vec3(
-        encodeSdrChannel(linearRgb.r),
-        encodeSdrChannel(linearRgb.g),
-        encodeSdrChannel(linearRgb.b)
+            encodeSdrChannel(linearRgb.r),
+            encodeSdrChannel(linearRgb.g),
+            encodeSdrChannel(linearRgb.b)
     );
 }
 
-void main() {
-    vec4 sourceColor = texture(uTexSampler, vTexCoord);
+vec3 applyContrast(vec3 linearRgb, float contrastFactor) {
 
-    if (uExposure == 0.0) {
-        fragColor = sourceColor;
-        return;
+    if (contrastFactor == 1.0) {
+        return linearRgb;
     }
 
-    vec3 linearRgb = decodeSdr(sourceColor.rgb);
+    const float pivot = 0.18;
 
-    float exposureMultiplier = exp2(uExposure);
-    vec3 exposedRgb = linearRgb * exposureMultiplier;
-
-    vec3 encodedRgb = encodeSdr(
-        max(exposedRgb, vec3(0.0))
+    float luminance = dot(
+            linearRgb,
+            vec3(0.2126, 0.7152, 0.0722)
     );
 
-    fragColor = vec4(
-        clamp(encodedRgb, 0.0, 1.0),
-        sourceColor.a
-    );
+
+    if (luminance <= 0.0) {
+        return linearRgb;
+    }
+
+    float adjustedLuminance =
+    pivot * pow(luminance / pivot, contrastFactor);
+
+    float gain = adjustedLuminance / luminance;
+
+    return linearRgb * gain;
 }

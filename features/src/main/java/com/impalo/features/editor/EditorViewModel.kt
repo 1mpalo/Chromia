@@ -3,6 +3,7 @@ package com.impalo.features.editor
 import android.content.ContentResolver
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.impalo.features.editor.model.ControlSpec
 import com.impalo.features.editor.model.SettingsState
@@ -56,6 +57,8 @@ class EditorViewModel : ViewModel() {
             slider.range.start,
             slider.range.endInclusive
         )
+
+        Log.d("value", "$value")
 
         _settings.update { state ->
             when (tool) {

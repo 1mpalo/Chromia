@@ -92,6 +92,11 @@ private class IdentityShaderProgram(
                 settings.snapshot().exposure
             )
 
+            glProgram.setFloatUniform(
+                "uContrast",
+                settings.snapshot().contrast
+            )
+
             glProgram.bindAttributesAndUniforms()
 
             GLES20.glDrawArrays(
