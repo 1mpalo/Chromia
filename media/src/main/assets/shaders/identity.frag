@@ -9,6 +9,7 @@ in vec2 vTexCoord;
 uniform float uExposure;
 uniform float uContrast;
 uniform float uHighlights;
+uniform float uShadows;
 
 out vec4 fragColor;
 
@@ -18,7 +19,8 @@ float encodeSdrChannel(float linearValue);
 vec3 encodeSdr(vec3 linearRgb);
 float getLuminance(vec3 linearRgb);
 vec3 applyContrast(vec3 linearRgb, float contrastFactor);
-vec3 applyHighlights(vec3 linearRgb, float hightlightsEv);
+vec3 applyHighlights(vec3 linearRgb, float highlightsEv);
+vec3 applyShadows(vec3 linearRgb, float shadowsEv);
 
 
 void main() {
@@ -27,7 +29,8 @@ void main() {
     if (
         uExposure == 0.0 &&
         uContrast == 0.0 &&
-        uHighlights == 0.0
+        uHighlights == 0.0 &&
+        uShadows == 0.0
     ) {
         fragColor = sourceColor;
         return;
@@ -44,9 +47,12 @@ void main() {
     linearRgb = applyContrast(linearRgb, contrastFactor);
 
     // highlights
-    float highlightsEv = clamp(uHighlights / 100.0, -1.0, 0.0);
+    float highlightsEv = clamp(uHighlights / 100.0, -1.0, 1.0);
     linearRgb = applyHighlights(linearRgb, highlightsEv);
 
+    // shadows
+    float shadowsEv = clamp(uShadows / 100.0, -1.0, 1.0);
+    linearRgb = applyShadows(linearRgb, shadowsEv);
 
 
     vec3 encodedRgb = encodeSdr(
@@ -126,15 +132,11 @@ vec3 applyContrast(vec3 linearRgb, float contrastFactor) {
 }
 
 vec3 applyHighlights(vec3 linearRgb, float highlightsEv) {
-    if(highlightsEv == 0.0) {
-        return linearRgb;
-    }
+    if(highlightsEv == 0.0) return linearRgb;
 
     float luminance = getLuminance(linearRgb);
+    if(luminance <= 0.0) return linearRgb;
 
-    if(luminance <= 0.0) {
-        return linearRgb;
-    }
 
     const float pivot = 0.18f;
     const float startStops = 0.5f;
@@ -144,7 +146,27 @@ vec3 applyHighlights(vec3 linearRgb, float highlightsEv) {
 
     float highlightsMask = smoothstep(startStops, endStops, stops);
 
-    float gain = exp2(hightlightsEv * highlightsMask);
+    float gain = exp2(highlightsEv * highlightsMask);
+
+    return linearRgb * gain;
+}
+
+vec3 applyShadows(vec3 linearRgb, float shadowsEv) {
+    if(shadowsEv == 0.0) return linearRgb;
+
+
+    float luminance = getLuminance(linearRgb);
+    if(luminance <= 0.0) return linearRgb;
+
+    const float pivot = 0.18f;
+    const float startStops = -2.5f;
+    const float endStops = -0.5f;
+
+    float stops = log2(luminance / pivot);
+
+    float shadowsMask = 1.0 - smoothstep(startStops, endStops, stops);
+
+    float gain = exp2(shadowsEv * shadowsMask);
 
     return linearRgb * gain;
 }

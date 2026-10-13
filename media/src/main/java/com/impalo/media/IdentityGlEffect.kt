@@ -102,6 +102,11 @@ private class IdentityShaderProgram(
                 settings.snapshot().highlights
             )
 
+            glProgram.setFloatUniform(
+                "uShadows",
+                settings.snapshot().shadows
+            )
+
             glProgram.bindAttributesAndUniforms()
 
             GLES20.glDrawArrays(
