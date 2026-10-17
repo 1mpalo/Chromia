@@ -40,7 +40,7 @@ enum class Tool(
         )
     ),
     WHITES(
-        title = "White",
+        title = "Whites",
         category = Category.LIGHT,
         control = ControlSpec.Slider(
             range = -100f..100f,

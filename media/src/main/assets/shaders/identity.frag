@@ -10,6 +10,8 @@ uniform float uExposure;
 uniform float uContrast;
 uniform float uHighlights;
 uniform float uShadows;
+uniform float uWhites;
+uniform float uBlacks;
 
 out vec4 fragColor;
 
@@ -21,6 +23,8 @@ float getLuminance(vec3 linearRgb);
 vec3 applyContrast(vec3 linearRgb, float contrastFactor);
 vec3 applyHighlights(vec3 linearRgb, float highlightsEv);
 vec3 applyShadows(vec3 linearRgb, float shadowsEv);
+vec3 applyWhites(vec3 linearRgb, float whitesAmount);
+vec3 applyBlacks(vec3 linearRgb, float blacksAmount);
 
 
 void main() {
@@ -30,7 +34,9 @@ void main() {
         uExposure == 0.0 &&
         uContrast == 0.0 &&
         uHighlights == 0.0 &&
-        uShadows == 0.0
+        uShadows == 0.0 &&
+        uWhites == 0.0 &&
+        uBlacks == 0.0
     ) {
         fragColor = sourceColor;
         return;
@@ -53,6 +59,14 @@ void main() {
     // shadows
     float shadowsEv = clamp(uShadows / 100.0, -1.0, 1.0);
     linearRgb = applyShadows(linearRgb, shadowsEv);
+
+    // whites
+    float whitesAmount = clamp(uWhites / 100.0, -1.0, 1.0);
+    linearRgb = applyWhites(linearRgb, whitesAmount);
+
+    // blacks
+    float blacksAmount = clamp(uBlacks / 100.0, -1.0, 1.0);
+    linearRgb = applyBlacks(linearRgb, blacksAmount);
 
 
     vec3 encodedRgb = encodeSdr(
@@ -169,4 +183,50 @@ vec3 applyShadows(vec3 linearRgb, float shadowsEv) {
     float gain = exp2(shadowsEv * shadowsMask);
 
     return linearRgb * gain;
+}
+
+vec3 applyWhites(vec3 linearRgb, float whitesAmount) {
+    if(whitesAmount == 0.0) return linearRgb;
+
+    float luminance = getLuminance(linearRgb);
+    if(luminance <= 0.0) return linearRgb;
+
+    const float startLuminance = 0.5;
+    const float endLuminance = 1.0;
+    const float maxAdjustment = 0.25;
+
+    float whitesMask = smoothstep(
+        startLuminance,
+        endLuminance,
+        luminance
+    );
+
+    float adjustment = maxAdjustment * whitesAmount;
+
+    float adjustedLuminance = luminance + adjustment * whitesMask;
+
+    float gain = adjustedLuminance / luminance;
+
+    return linearRgb * gain;
+}
+
+vec3 applyBlacks(vec3 linearRgb, float blacksAmount) {
+    if(blacksAmount == 0.0f) return linearRgb;
+
+    float luminance = getLuminance(linearRgb);
+    if(luminance <= 0.0) return linearRgb;
+
+    const float startLuminance = 0.0f;
+    const float endLuminance = 0.125f;
+    const float maxAdjustment = 0.02f;
+
+    float blacksMask = 1.0 - smoothstep(
+        startLuminance,
+        endLuminance,
+        luminance
+    );
+
+    float adjustment = maxAdjustment * blacksAmount;
+
+    return linearRgb + vec3(adjustment * blacksMask);
 }

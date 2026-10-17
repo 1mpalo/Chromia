@@ -1,5 +1,9 @@
 package com.impalo.media
 
+// TODO: при дальнейшем улучшении можно строить
+// TODO: совместную тональную кривую или вычислять маски из общего опорного сигнала
+// в шейдере
+
 import android.content.Context
 import android.opengl.GLES20
 import android.util.Log
@@ -105,6 +109,16 @@ private class IdentityShaderProgram(
             glProgram.setFloatUniform(
                 "uShadows",
                 settings.snapshot().shadows
+            )
+
+            glProgram.setFloatUniform(
+                "uWhites",
+                settings.snapshot().whites
+            )
+
+            glProgram.setFloatUniform(
+                "uBlacks",
+                settings.snapshot().blacks
             )
 
             glProgram.bindAttributesAndUniforms()
