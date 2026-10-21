@@ -3,6 +3,8 @@ package com.impalo.media
 // TODO: при дальнейшем улучшении можно строить
 // TODO: совместную тональную кривую или вычислять маски из общего опорного сигнала
 // в шейдере
+// TODO: изучить и добавить определение белого относительно анализы сцены
+// в шейдере
 
 import android.content.Context
 import android.opengl.GLES20
@@ -16,6 +18,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.BaseGlShaderProgram
 import androidx.media3.effect.GlEffect
 import androidx.media3.effect.GlShaderProgram
+import com.impalo.media.color.TemperatureAdaptation
 
 @OptIn(UnstableApi::class)
 class IdentityGlEffect(
@@ -43,6 +46,10 @@ private class IdentityShaderProgram(
     /* useHighPrecisionColorComponents = */ useHdr,
     /* texturePoolCapacity = */ 1
 ) {
+
+    private var lastTemperature = Float.NaN
+    private var temperatureLmsScale = floatArrayOf(1f, 1f, 1f)
+
     private val glProgram: GlProgram = try {
         GlProgram(
             context,
@@ -85,6 +92,22 @@ private class IdentityShaderProgram(
 
             glProgram.use()
 
+            val grading = settings.snapshot()
+
+            if(grading.temp != lastTemperature) {
+                temperatureLmsScale =
+                    TemperatureAdaptation.calculateLmsScale(
+                        temperature = grading.temp
+                    )
+
+                lastTemperature = grading.temp
+            }
+
+            glProgram.setFloatsUniform(
+                "uWhiteBalanceLmsScale",
+                temperatureLmsScale
+            )
+
             glProgram.setSamplerTexIdUniform(
                 "uTexSampler",
                 inputTexId,
@@ -93,32 +116,32 @@ private class IdentityShaderProgram(
 
             glProgram.setFloatUniform(
                 "uExposure",
-                settings.snapshot().exposure
+                grading.exposure
             )
 
             glProgram.setFloatUniform(
                 "uContrast",
-                settings.snapshot().contrast
+                grading.contrast
             )
 
             glProgram.setFloatUniform(
                 "uHighlights",
-                settings.snapshot().highlights
+                grading.highlights
             )
 
             glProgram.setFloatUniform(
                 "uShadows",
-                settings.snapshot().shadows
+                grading.shadows
             )
 
             glProgram.setFloatUniform(
                 "uWhites",
-                settings.snapshot().whites
+                grading.whites
             )
 
             glProgram.setFloatUniform(
                 "uBlacks",
-                settings.snapshot().blacks
+                grading.blacks
             )
 
             glProgram.bindAttributesAndUniforms()
