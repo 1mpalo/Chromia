@@ -4,6 +4,8 @@ import kotlin.math.abs
 
 object TemperatureAdaptation {
 
+    private const val MAX_TINT_Y_OFFSET = 0.02
+
     private val neutralWhite = whiteXyz(
         x = 0.31270,
         y = 0.32900
@@ -20,27 +22,50 @@ object TemperatureAdaptation {
     )
 
     fun calculateLmsScale(
-        temperature: Float
+        temperature: Float,
+        tint: Float
     ): FloatArray {
-        val normalized = (
+        val normalizedTemperature = (
             temperature.coerceIn(-100f, 100f) / 100f
         ).toDouble()
 
-        if (normalized == 0.0) {
+        val normalizedTint = (
+            tint.coerceIn(-100f, 100f) / 100f
+        ).toDouble()
+
+        if (normalizedTemperature == 0.0 && normalizedTint == 0.0) {
             return floatArrayOf(1f, 1f, 1f)
         }
 
-        val endpoint = if (normalized > 0.0) {
+        val endpoint = if (normalizedTemperature > 0.0) {
             coolLightWhite
         } else {
             warmLightWhite
         }
 
-        val amount = abs(normalized)
+        val amount = abs(normalizedTemperature)
 
-        val sourceWhite = DoubleArray(3) { index ->
+        val temperatureWhite = DoubleArray(3) { index ->
             neutralWhite[index] +
                 (endpoint[index] - neutralWhite[index]) * amount
+        }
+
+        val sourceWhite = if (normalizedTint == 0.0) {
+            temperatureWhite
+        } else {
+
+            val sum = temperatureWhite.sum()
+
+            val chromaticityX = temperatureWhite[0] / sum
+            val chromaticityY = temperatureWhite[1] / sum
+
+            val adjustedY = chromaticityY +
+                    normalizedTint * MAX_TINT_Y_OFFSET
+
+            whiteXyz(
+                x = chromaticityX,
+                y = adjustedY
+            )
         }
 
         val sourceLms = xyzToLms(sourceWhite)

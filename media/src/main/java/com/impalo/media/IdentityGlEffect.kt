@@ -48,6 +48,7 @@ private class IdentityShaderProgram(
 ) {
 
     private var lastTemperature = Float.NaN
+    private var lastTint = Float.NaN
     private var temperatureLmsScale = floatArrayOf(1f, 1f, 1f)
 
     private val glProgram: GlProgram = try {
@@ -94,13 +95,15 @@ private class IdentityShaderProgram(
 
             val grading = settings.snapshot()
 
-            if(grading.temp != lastTemperature) {
+            if(grading.temp != lastTemperature || grading.tint != lastTint) {
                 temperatureLmsScale =
                     TemperatureAdaptation.calculateLmsScale(
-                        temperature = grading.temp
+                        temperature = grading.temp,
+                        tint = grading.tint
                     )
 
                 lastTemperature = grading.temp
+                lastTint = grading.tint
             }
 
             glProgram.setFloatsUniform(
