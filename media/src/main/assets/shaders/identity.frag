@@ -13,6 +13,7 @@ uniform float uShadows;
 uniform float uWhites;
 uniform float uBlacks;
 uniform vec3 uWhiteBalanceLmsScale;
+uniform float uSaturation;
 
 out vec4 fragColor;
 
@@ -44,7 +45,7 @@ vec3 applyShadows(vec3 linearRgb, float shadowsEv);
 vec3 applyWhites(vec3 linearRgb, float whitesAmount);
 vec3 applyBlacks(vec3 linearRgb, float blacksAmount);
 vec3 applyWhiteBalance(vec3 linearRgb);
-
+vec3 applySaturation(vec3 linearRgb, float saturationAmount);
 
 void main() {
     vec4 sourceColor = texture(uTexSampler, vTexCoord);
@@ -58,6 +59,7 @@ void main() {
 
     if (
         whiteBalanceIsNeutral &&
+        uSaturation == 100.0 &&
         uExposure == 0.0 &&
         uContrast == 0.0 &&
         uHighlights == 0.0 &&
@@ -95,6 +97,10 @@ void main() {
     // blacks
     float blacksAmount = clamp(uBlacks / 100.0, -1.0, 1.0);
     linearRgb = applyBlacks(linearRgb, blacksAmount);
+
+    // saturation
+    float saturationAmount = clamp(uSaturation / 100.0, 0.0, 2.0);
+    linearRgb = applySaturation(linearRgb, saturationAmount);
 
 
     vec3 encodedRgb = encodeSdr(
@@ -274,4 +280,18 @@ vec3 applyWhiteBalance(vec3 linearRgb) {
     lms *= uWhiteBalanceLmsScale;
 
     return BRADFORD_LMS_TO_RGB * lms;
+}
+
+vec3 applySaturation(vec3 linearRgb, float saturationAmount) {
+
+    if(saturationAmount == 1.0) return linearRgb;
+
+    float luminance = getLuminance(linearRgb);
+    if(luminance <= 0.0) return linearRgb;
+
+    vec3 neutralGray = vec3(luminance);
+
+    vec3 colorDeviation = linearRgb - neutralGray;
+
+    return neutralGray + colorDeviation * saturationAmount;
 }

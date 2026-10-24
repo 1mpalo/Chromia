@@ -147,6 +147,11 @@ private class IdentityShaderProgram(
                 grading.blacks
             )
 
+            glProgram.setFloatUniform(
+                "uSaturation",
+                grading.saturation
+            )
+
             glProgram.bindAttributesAndUniforms()
 
             GLES20.glDrawArrays(
