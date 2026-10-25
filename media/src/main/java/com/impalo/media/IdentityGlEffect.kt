@@ -5,6 +5,7 @@ package com.impalo.media
 // в шейдере
 // TODO: изучить и добавить определение белого относительно анализы сцены
 // в шейдере
+// TODO: для vibrance почитать про отделение и защиту оттенков кожи
 
 import android.content.Context
 import android.opengl.GLES20
@@ -145,6 +146,11 @@ private class IdentityShaderProgram(
             glProgram.setFloatUniform(
                 "uBlacks",
                 grading.blacks
+            )
+
+            glProgram.setFloatUniform(
+                "uVibrance",
+                grading.vibrance
             )
 
             glProgram.setFloatUniform(

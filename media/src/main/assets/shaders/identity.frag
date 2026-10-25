@@ -14,6 +14,7 @@ uniform float uWhites;
 uniform float uBlacks;
 uniform vec3 uWhiteBalanceLmsScale;
 uniform float uSaturation;
+uniform float uVibrance;
 
 out vec4 fragColor;
 
@@ -46,6 +47,7 @@ vec3 applyWhites(vec3 linearRgb, float whitesAmount);
 vec3 applyBlacks(vec3 linearRgb, float blacksAmount);
 vec3 applyWhiteBalance(vec3 linearRgb);
 vec3 applySaturation(vec3 linearRgb, float saturationAmount);
+vec3 applyVibrance(vec3 linearRgb, float vibranceAmount);
 
 void main() {
     vec4 sourceColor = texture(uTexSampler, vTexCoord);
@@ -60,6 +62,7 @@ void main() {
     if (
         whiteBalanceIsNeutral &&
         uSaturation == 100.0 &&
+        uVibrance == 0.0 &&
         uExposure == 0.0 &&
         uContrast == 0.0 &&
         uHighlights == 0.0 &&
@@ -97,6 +100,10 @@ void main() {
     // blacks
     float blacksAmount = clamp(uBlacks / 100.0, -1.0, 1.0);
     linearRgb = applyBlacks(linearRgb, blacksAmount);
+
+    // vibrance
+    float vibranceAmount = clamp(uVibrance / 100.0, -1.0, 1.0);
+    linearRgb = applyVibrance(linearRgb, vibranceAmount);
 
     // saturation
     float saturationAmount = clamp(uSaturation / 100.0, 0.0, 2.0);
@@ -294,4 +301,31 @@ vec3 applySaturation(vec3 linearRgb, float saturationAmount) {
     vec3 colorDeviation = linearRgb - neutralGray;
 
     return neutralGray + colorDeviation * saturationAmount;
+}
+
+vec3 applyVibrance(vec3 linearRgb, float vibranceAmount) {
+
+    if(vibranceAmount == 0.0) return linearRgb;
+
+    float maxChannel = max(
+        linearRgb.r,
+        max(linearRgb.g, linearRgb.b)
+    );
+
+    if(maxChannel <= 0.0) return linearRgb;
+
+    float minChannel = min(
+        linearRgb.r,
+        min(linearRgb.g, linearRgb.b)
+    );
+
+    float vibranceWeight = clamp(
+        minChannel / maxChannel,
+        0.0,
+        1.0
+    );
+
+    float saturationFactor = 1.0 + vibranceAmount * vibranceWeight;
+
+    return applySaturation(linearRgb, saturationFactor);
 }
