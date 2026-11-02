@@ -33,4 +33,5 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     implementation(libs.androidx.media3.effect)
+    implementation(libs.androidx.media3.transformer)
 }

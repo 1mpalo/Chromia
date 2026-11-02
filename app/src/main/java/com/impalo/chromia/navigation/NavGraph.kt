@@ -2,6 +2,7 @@ package com.impalo.chromia.navigation
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -14,6 +15,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.impalo.features.editor.EditorScreen
 import com.impalo.features.importer.ImportRoute
 import com.impalo.features.editor.EditorViewModel
+import com.impalo.features.editor.model.ExportState
 
 @Composable
 fun NavGraph() {
@@ -39,14 +41,14 @@ fun NavGraph() {
                 val viewModel: EditorViewModel = viewModel()
                 val settings by viewModel.settings.collectAsStateWithLifecycle()
 
-                val context = LocalContext.current
-                val fileName = with(viewModel) {context.contentResolver.getFileName(screen.uri.toUri()) ?: "Unknown video"}
+                val exportState by viewModel.exportState.collectAsStateWithLifecycle()
 
                 EditorScreen(
                     uri = screen.uri.toUri(),
-                    fileName = fileName,
                     onEvent = viewModel::onEvent,
-                    settings = settings
+                    settings = settings,
+                    exportState = exportState,
+                    effectFlow = viewModel.effectFlow
                 )
             }
 

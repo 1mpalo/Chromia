@@ -30,7 +30,7 @@ import com.impalo.features.R
 
 @Composable
 fun EditorTopBar(
-    fileName: String,
+    info: String?,
     onAutoGradeClicked: () -> Unit,
     onExportClicked: () -> Unit
 ) {
@@ -49,10 +49,10 @@ fun EditorTopBar(
         Spacer(modifier = Modifier.width(10.dp))
 
         Text(
-            text = fileName,
+            text = info ?: "Unknown format",
             color = MaterialTheme.colorScheme.onBackground,
             fontFamily = InterFontFamily,
-            fontSize = 14.sp
+            fontSize = 11.7.sp
         )
 
         Spacer(modifier = Modifier.weight(1f))
