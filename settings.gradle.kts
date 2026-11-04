@@ -24,4 +24,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Chromia"
 include(":app")
- 
+include(":core")
+include(":features")
+include(":media")
