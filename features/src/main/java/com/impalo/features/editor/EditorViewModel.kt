@@ -14,6 +14,7 @@ import com.impalo.features.editor.model.SettingsState
 import com.impalo.features.editor.model.Tool
 import com.impalo.features.editor.model.UiEffect
 import com.impalo.media.VideoExporter
+import com.impalo.media.VideoMetadata
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,6 +32,9 @@ class EditorViewModel : ViewModel() {
     private val _exportState = MutableStateFlow<ExportState>(ExportState.Idle)
     val exportState = _exportState.asStateFlow()
 
+    private val _videoMetadata = MutableStateFlow<VideoMetadata?>(null)
+    val videMetadata = _videoMetadata.asStateFlow()
+
     private val _effectFlow = MutableSharedFlow<UiEffect>()
     val effectFlow = _effectFlow.asSharedFlow()
 
@@ -43,39 +47,14 @@ class EditorViewModel : ViewModel() {
             }
 
             is EditorEvents.OnExportClicked -> {
-                if(exportJob?.isCompleted != false) {
-                    val settingsSnapshot = _settings.value.toGradingSettings()
+                onExportClicked(
+                    videoExporter = event.videoExporter,
+                    uri = event.uri
+                )
+            }
 
-                    _exportState.value = ExportState.Exporting(progress = null)
-
-                    exportJob = viewModelScope.launch {
-                        try {
-                            val savedUri = event.videoExporter.export(
-                                uri = event.uri,
-                                grading = settingsSnapshot,
-                                onProgress = { progress ->
-                                    _exportState.value = ExportState.Exporting(progress = progress)
-                                },
-                                onSaving = {
-                                    _exportState.value = ExportState.Saving
-                                }
-                            )
-
-                            _exportState.value = ExportState.Success(uri = savedUri)
-                            _effectFlow.emit(UiEffect.ShowToast("Video saved"))
-                        } catch (exception: CancellationException) {
-                            _exportState.value = ExportState.Idle
-                            throw exception
-                        } catch (exception: Exception) {
-                            _exportState.value = ExportState.Error(
-                                message = exception.message
-                                    ?: "Failed to export the video"
-                            )
-                        } finally {
-                            exportJob = null
-                        }
-                    }
-                }
+            is EditorEvents.OnVideoMetadataLoaded -> {
+                _videoMetadata.value = event.metadata
             }
         }
     }
@@ -147,6 +126,45 @@ class EditorViewModel : ViewModel() {
                     state.copy(vibrance = value)
 
                 else -> { state }
+            }
+        }
+    }
+
+    private fun onExportClicked(
+        videoExporter: VideoExporter,
+        uri: Uri
+    ) {
+        if(exportJob?.isCompleted != false) {
+            val settingsSnapshot = _settings.value.toGradingSettings()
+
+            _exportState.value = ExportState.Exporting(progress = null)
+
+            exportJob = viewModelScope.launch {
+                try {
+                    val savedUri = videoExporter.export(
+                        uri = uri,
+                        grading = settingsSnapshot,
+                        onProgress = { progress ->
+                            _exportState.value = ExportState.Exporting(progress = progress)
+                        },
+                        onSaving = {
+                            _exportState.value = ExportState.Saving
+                        }
+                    )
+
+                    _exportState.value = ExportState.Success(uri = savedUri)
+                    _effectFlow.emit(UiEffect.ShowToast("Video saved"))
+                } catch (exception: CancellationException) {
+                    _exportState.value = ExportState.Idle
+                    throw exception
+                } catch (exception: Exception) {
+                    _exportState.value = ExportState.Error(
+                        message = exception.message
+                            ?: "Failed to export the video"
+                    )
+                } finally {
+                    exportJob = null
+                }
             }
         }
     }

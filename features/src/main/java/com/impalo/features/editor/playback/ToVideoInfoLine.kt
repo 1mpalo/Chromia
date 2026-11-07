@@ -6,22 +6,33 @@ import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import com.impalo.media.VideoMetadata
 import java.util.Locale
+import kotlin.math.abs
 
 @OptIn(UnstableApi::class)
-fun Format.toVideoInfoLine(
+fun VideoMetadata.toVideoInfoLine(
     extension: String?
 ): String {
 
-    val dynamicRange = when(colorInfo?.colorTransfer) {
-        C.COLOR_TRANSFER_SDR,
-        C.COLOR_TRANSFER_SRGB,
-        C.COLOR_TRANSFER_GAMMA_2_2 -> "SDR"
+    val samsungLogTag = textTags[
+        "com.samsung.android.logvideo"
+    ]
 
-        C.COLOR_TRANSFER_HLG -> "HDR (HLG)"
-        C.COLOR_TRANSFER_ST2084 -> "HDR (PQ)"
+    val dynamicRange = when {
 
-        else -> null
+        samsungLogTag != null -> "Samsung Log"
+
+        else -> when (colorInfo?.colorTransfer) {
+            C.COLOR_TRANSFER_SDR,
+            C.COLOR_TRANSFER_SRGB,
+            C.COLOR_TRANSFER_GAMMA_2_2 -> "SDR"
+
+            C.COLOR_TRANSFER_HLG -> "HDR (HLG)"
+            C.COLOR_TRANSFER_ST2084 -> "HDR (PQ)"
+
+            else -> null
+        }
     }
 
     Log.d("infoExt", "$dynamicRange")
@@ -41,21 +52,16 @@ fun Format.toVideoInfoLine(
         else -> sampleMimeType
     }
 
-    Log.d("infoExt", "$codec")
-
-    val resolution = if(width > 0 && height > 0) {
+    val resolution = if(width != null && height != null) {
         "${width}×${height}"
     } else null
 
-    Log.d("infoExt", "$resolution")
+    val baseFpsList = listOf(24 ,30, 60, 90, 120, 144, 169, 240)
+    val fps = frameRate?.let { value ->
+        val closestFps = baseFpsList.minByOrNull { abs(it - value) } ?: value.toInt()
+        "$closestFps fps"
+    }
 
-    val fps = frameRate
-        .takeIf { it > 0f }
-        ?.let { value ->
-            String.format(Locale.ROOT, "%.2f fps", value)
-        }
-
-    Log.d("infoExt", "$fps")
 
     val lumaDepth = colorInfo?.lumaBitdepth
     val chromaDepth = colorInfo?.chromaBitdepth
@@ -67,7 +73,7 @@ fun Format.toVideoInfoLine(
         else -> "Y $lumaDepth bit / C $chromaDepth bit"
     }
 
-    return listOf(
+    return listOfNotNull(
         dynamicRange,
         container,
         codec,

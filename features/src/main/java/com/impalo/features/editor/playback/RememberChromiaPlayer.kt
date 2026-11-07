@@ -9,6 +9,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -23,12 +24,14 @@ import com.impalo.features.editor.model.SettingsState
 import com.impalo.media.GradingSettings
 import com.impalo.media.GradingSettingsHolder
 import com.impalo.media.IdentityGlEffect
+import com.impalo.media.VideoMetadata
 
 @OptIn(UnstableApi::class)
 @Composable
 fun rememberChromiaPlayer(
     uri: Uri,
-    gradingSettings: SettingsState
+    gradingSettings: SettingsState,
+    onVideoMetadataLoaded: (VideoMetadata) -> Unit
 ) : ExoPlayer {
 
     val settingsHolder = remember {
@@ -40,6 +43,10 @@ fun rememberChromiaPlayer(
             gradingSettings.toGradingSettings()
         )
     }
+
+    val currentOnVideoMetadataLoaded by rememberUpdatedState(
+        onVideoMetadataLoaded
+    )
 
     val applicationContext = LocalContext.current.applicationContext
     val player = remember(applicationContext) {
@@ -53,11 +60,11 @@ fun rememberChromiaPlayer(
             exoPlayer.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
                     if (playbackState == Player.STATE_READY) {
-                        Log.d(
-                            "ChromiaColor",
-                            "Media3=${MediaLibraryInfo.VERSION}, " +
-                                    "colorInfo=${exoPlayer.videoFormat?.colorInfo}"
-                        )
+                        exoPlayer.videoFormat?.let { format ->
+                            currentOnVideoMetadataLoaded (
+                                format.toVideoMetadata()
+                            )
+                        }
                     }
                 }
             })

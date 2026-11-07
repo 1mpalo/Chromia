@@ -38,6 +38,7 @@ import com.impalo.features.editor.model.UiEffect
 import com.impalo.features.editor.playback.rememberChromiaPlayer
 import com.impalo.features.editor.playback.toVideoInfoLine
 import com.impalo.media.VideoExporter
+import com.impalo.media.VideoMetadata
 import kotlinx.coroutines.flow.Flow
 
 @OptIn(UnstableApi::class)
@@ -46,13 +47,17 @@ fun EditorScreen(
     uri: Uri,
     onEvent: (EditorEvents) -> Unit,
     settings: SettingsState,
+    videoMetadata: VideoMetadata?,
     effectFlow: Flow<UiEffect>,
     exportState: ExportState
 ) {
 
     val player = rememberChromiaPlayer(
         uri = uri,
-        gradingSettings = settings
+        gradingSettings = settings,
+        onVideoMetadataLoaded = { metadata ->
+            onEvent(EditorEvents.OnVideoMetadataLoaded(metadata))
+        }
     )
 
     val context = LocalContext.current
@@ -62,33 +67,11 @@ fun EditorScreen(
         if(exportState is ExportState.Exporting) player.pause()
     }
 
-    var videoFormat by remember(player, uri) {
-        mutableStateOf<Format?>(null)
-    }
-
-    DisposableEffect(player, uri) {
-        val listener = object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == Player.STATE_READY) {
-                    videoFormat = player.videoFormat
-                }
-            }
-        }
-
-        player.addListener(listener)
-
-        videoFormat = player.videoFormat
-
-        onDispose {
-            player.removeListener(listener)
-        }
-    }
-
-    val contentResolver = LocalContext.current.contentResolver
+    val contentResolver = context.contentResolver
     val extension = contentResolver.getType(uri)?.let { mimeType ->
         MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
     }
-    val info = videoFormat?.toVideoInfoLine(extension)
+    val info = videoMetadata?.toVideoInfoLine(extension)
 
     LaunchedEffect(effectFlow) {
         effectFlow.collect { effect ->

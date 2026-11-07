@@ -42,12 +42,14 @@ fun NavGraph() {
                 val settings by viewModel.settings.collectAsStateWithLifecycle()
 
                 val exportState by viewModel.exportState.collectAsStateWithLifecycle()
+                val videoMetadata by viewModel.videMetadata.collectAsStateWithLifecycle()
 
                 EditorScreen(
                     uri = screen.uri.toUri(),
                     onEvent = viewModel::onEvent,
                     settings = settings,
                     exportState = exportState,
+                    videoMetadata = videoMetadata,
                     effectFlow = viewModel.effectFlow
                 )
             }
