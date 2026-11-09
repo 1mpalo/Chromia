@@ -25,6 +25,8 @@ import com.impalo.media.GradingSettings
 import com.impalo.media.GradingSettingsHolder
 import com.impalo.media.IdentityGlEffect
 import com.impalo.media.VideoMetadata
+import androidx.media3.common.C
+import androidx.media3.common.Format
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -36,6 +38,13 @@ fun rememberChromiaPlayer(
 
     val settingsHolder = remember {
         GradingSettingsHolder()
+    }
+
+    val sdrEffect = remember(settingsHolder) {
+        IdentityGlEffect(settingsHolder)
+    }
+    val samsungLogEffect = remember(settingsHolder) {
+        IdentityGlEffect(settingsHolder, samsungLog = true)
     }
 
     SideEffect{
@@ -51,21 +60,21 @@ fun rememberChromiaPlayer(
     val applicationContext = LocalContext.current.applicationContext
     val player = remember(applicationContext) {
         ExoPlayer.Builder(applicationContext).build().also { exoPlayer ->
-            exoPlayer.setVideoEffects(
-                listOf<Effect>(IdentityGlEffect(
-                    settingsHolder = settingsHolder
-                ))
-            )
-
             exoPlayer.addListener(object : Player.Listener {
                 override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY) {
-                        exoPlayer.videoFormat?.let { format ->
-                            currentOnVideoMetadataLoaded (
-                                format.toVideoMetadata()
-                            )
-                        }
+                    if (playbackState != Player.STATE_READY) return
+
+                    val format = exoPlayer.videoFormat ?: return
+                    val metadata = format.toVideoMetadata()
+
+                    val effect = if (metadata.supportsSamsungLogV1()) {
+                        samsungLogEffect
+                    } else {
+                        sdrEffect
                     }
+
+                    exoPlayer.setVideoEffects(listOf(effect))
+                    currentOnVideoMetadataLoaded(metadata)
                 }
             })
         }
@@ -82,7 +91,7 @@ fun rememberChromiaPlayer(
         }
 
         player.setMediaItem(MediaItem.fromUri(uri))
-
+        player.setVideoEffects(listOf(sdrEffect))
         player.prepare()
     }
 
@@ -108,3 +117,4 @@ fun rememberChromiaPlayer(
 
     return player
 }
+
