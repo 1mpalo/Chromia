@@ -34,6 +34,7 @@ class EditorViewModel : ViewModel() {
 
     private val _videoMetadata = MutableStateFlow<VideoMetadata?>(null)
     val videMetadata = _videoMetadata.asStateFlow()
+    private var metadataUri: Uri? = null
 
     private val _effectFlow = MutableSharedFlow<UiEffect>()
     val effectFlow = _effectFlow.asSharedFlow()
@@ -55,6 +56,7 @@ class EditorViewModel : ViewModel() {
 
             is EditorEvents.OnVideoMetadataLoaded -> {
                 _videoMetadata.value = event.metadata
+                metadataUri = event.uri
             }
         }
     }
@@ -135,8 +137,15 @@ class EditorViewModel : ViewModel() {
         uri: Uri
     ) {
         if(exportJob?.isCompleted != false) {
-            val settingsSnapshot = _settings.value.toGradingSettings()
+            val metadata = _videoMetadata.value?.takeIf { metadataUri == uri } ?: run {
+                viewModelScope.launch {
+                    _effectFlow.emit(UiEffect.ShowToast("Video is still loading"))
+                }
+                return
+            }
 
+            val settingsSnapshot = _settings.value.toGradingSettings()
+            val samsungLogSnapshot = metadata.supportsSamsungLogV1()
             _exportState.value = ExportState.Exporting(progress = null)
 
             exportJob = viewModelScope.launch {
@@ -144,6 +153,7 @@ class EditorViewModel : ViewModel() {
                     val savedUri = videoExporter.export(
                         uri = uri,
                         grading = settingsSnapshot,
+                        samsungLog = samsungLogSnapshot,
                         onProgress = { progress ->
                             _exportState.value = ExportState.Exporting(progress = progress)
                         },

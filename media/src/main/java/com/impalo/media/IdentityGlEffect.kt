@@ -8,8 +8,6 @@ package com.impalo.media
 
 import android.content.Context
 import android.opengl.GLES20
-import android.opengl.GLES30
-import android.opengl.GLES31
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.VideoFrameProcessingException
@@ -21,13 +19,11 @@ import androidx.media3.effect.BaseGlShaderProgram
 import androidx.media3.effect.GlEffect
 import androidx.media3.effect.GlShaderProgram
 import com.impalo.media.color.TemperatureAdaptation
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 @OptIn(UnstableApi::class)
 class IdentityGlEffect(
     private val settingsHolder: GradingSettingsHolder,
-    private val samsungLog : Boolean = false
+    private val samsungLog: Boolean = false
 ) : GlEffect {
     @OptIn(UnstableApi::class)
     override fun toGlShaderProgram(
@@ -58,7 +54,7 @@ private class IdentityShaderProgram(
     private var lastTint = Float.NaN
     private var temperatureLmsScale = floatArrayOf(1f, 1f, 1f)
 
-    val fragmentShader = if(samsungLog) {
+    val fragmentShader = if (samsungLog) {
         "shaders/samsung_log.frag"
     } else "shaders/identity.frag"
     private val glProgram: GlProgram = try {
@@ -106,72 +102,68 @@ private class IdentityShaderProgram(
 
             val grading = settings.snapshot()
 
-            glProgram.setSamplerTexIdUniform("uTexSampler", inputTexId, 0)
-            glProgram.setFloatUniform("uExposure", grading.exposure)
+            if (grading.temp != lastTemperature || grading.tint != lastTint) {
+                temperatureLmsScale =
+                    TemperatureAdaptation.calculateLmsScale(
+                        temperature = grading.temp,
+                        tint = grading.tint
+                    )
 
-            if(!samsungLog) {
-                if (grading.temp != lastTemperature || grading.tint != lastTint) {
-                    temperatureLmsScale =
-                        TemperatureAdaptation.calculateLmsScale(
-                            temperature = grading.temp,
-                            tint = grading.tint
-                        )
-
-                    lastTemperature = grading.temp
-                    lastTint = grading.tint
-                }
-
-                glProgram.setFloatsUniform(
-                    "uWhiteBalanceLmsScale",
-                    temperatureLmsScale
-                )
-
-//                glProgram.setSamplerTexIdUniform(
-//                    "uTexSampler",
-//                    inputTexId,
-//                    0
-//                )
-
-//                glProgram.setFloatUniform(
-//                    "uExposure",
-//                    grading.exposure
-//                )
-
-                glProgram.setFloatUniform(
-                    "uContrast",
-                    grading.contrast
-                )
-
-                glProgram.setFloatUniform(
-                    "uHighlights",
-                    grading.highlights
-                )
-
-                glProgram.setFloatUniform(
-                    "uShadows",
-                    grading.shadows
-                )
-
-                glProgram.setFloatUniform(
-                    "uWhites",
-                    grading.whites
-                )
-
-                glProgram.setFloatUniform(
-                    "uBlacks",
-                    grading.blacks
-                )
-
-                glProgram.setFloatUniform(
-                    "uVibrance",
-                    grading.vibrance
-                )
-
-                glProgram.setFloatUniform(
-                    "uSaturation",
-                    grading.saturation
-                )
+                lastTemperature = grading.temp
+                lastTint = grading.tint
             }
+
+            glProgram.setFloatsUniform(
+                "uWhiteBalanceLmsScale",
+                temperatureLmsScale
+            )
+
+            glProgram.setSamplerTexIdUniform(
+                "uTexSampler",
+                inputTexId,
+                0
+            )
+
+            glProgram.setFloatUniform(
+                "uExposure",
+                grading.exposure
+            )
+
+            glProgram.setFloatUniform(
+                "uContrast",
+                grading.contrast
+            )
+
+            glProgram.setFloatUniform(
+                "uHighlights",
+                grading.highlights
+            )
+
+            glProgram.setFloatUniform(
+                "uShadows",
+                grading.shadows
+            )
+
+            glProgram.setFloatUniform(
+                "uWhites",
+                grading.whites
+            )
+
+            glProgram.setFloatUniform(
+                "uBlacks",
+                grading.blacks
+            )
+
+            glProgram.setFloatUniform(
+                "uVibrance",
+                grading.vibrance
+            )
+
+            glProgram.setFloatUniform(
+                "uSaturation",
+                grading.saturation
+            )
+
             glProgram.bindAttributesAndUniforms()
 
             GLES20.glDrawArrays(

@@ -56,7 +56,7 @@ fun EditorScreen(
         uri = uri,
         gradingSettings = settings,
         onVideoMetadataLoaded = { metadata ->
-            onEvent(EditorEvents.OnVideoMetadataLoaded(metadata))
+            onEvent(EditorEvents.OnVideoMetadataLoaded(metadata, uri))
         }
     )
 

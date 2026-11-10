@@ -38,6 +38,7 @@ class VideoExporter(context: Context) {
     suspend fun export(
         uri: Uri,
         grading: GradingSettings,
+        samsungLog: Boolean,
         onProgress: (Int?) -> Unit = {},
         onSaving: () -> Unit
     ): Uri = withContext(Dispatchers.Main.immediate) {
@@ -59,6 +60,7 @@ class VideoExporter(context: Context) {
             renderToFile(
                 uri = uri,
                 grading = grading,
+                samsungLog = samsungLog,
                 outputFile = outputFile,
                 onProgress = onProgress
             )
@@ -83,6 +85,7 @@ class VideoExporter(context: Context) {
     private suspend fun renderToFile(
         uri: Uri,
         grading: GradingSettings,
+        samsungLog: Boolean,
         outputFile: File,
         onProgress: (Int?) -> Unit
     ) = coroutineScope {
@@ -102,7 +105,7 @@ class VideoExporter(context: Context) {
             Effects(
                 emptyList(),
                 listOf(
-                    IdentityGlEffect(exportSettingsHolder)
+                    IdentityGlEffect(exportSettingsHolder, samsungLog)
                 )
             )
         ).build()

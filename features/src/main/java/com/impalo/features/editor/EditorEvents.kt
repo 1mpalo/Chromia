@@ -18,6 +18,7 @@ sealed interface EditorEvents {
     ) : EditorEvents
 
     data class OnVideoMetadataLoaded(
-        val metadata: VideoMetadata
+        val metadata: VideoMetadata,
+        val uri: Uri
     ) : EditorEvents
 }
