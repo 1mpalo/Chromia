@@ -21,4 +21,6 @@ sealed interface EditorEvents {
         val metadata: VideoMetadata,
         val uri: Uri
     ) : EditorEvents
+
+    data object OnSliderValueChangeFinished : EditorEvents
 }

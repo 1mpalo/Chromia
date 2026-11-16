@@ -27,7 +27,8 @@ import com.impalo.features.editor.model.Tool
 fun ToolsList(
     tools: List<Tool>,
     onSliderValueChange: (tool: Tool, newValue: Float) -> Unit,
-    settings: SettingsState
+    settings: SettingsState,
+    onDragEnd: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
@@ -75,7 +76,8 @@ fun ToolsList(
                         color = Color.White,
                         range = tool.control.range,
                         fillFrom = tool.control.fillFrom,
-                        defaultValue = tool.control.defaultValue
+                        defaultValue = tool.control.defaultValue,
+                        onDragEnd = onDragEnd
                     )
                 }
             }

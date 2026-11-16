@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.impalo.features.editor.EditorEvents
 import com.impalo.features.editor.model.Category
 import com.impalo.features.editor.model.SettingsState
 import com.impalo.features.editor.model.Tool
@@ -22,7 +23,8 @@ import com.impalo.features.editor.model.Tool
 fun EditingPanel(
     modifier: Modifier = Modifier,
     onSliderValueChange: (tool: Tool, newValue: Float) -> Unit,
-    settings: SettingsState
+    settings: SettingsState,
+    onEvent: (EditorEvents) -> Unit
 ) {
 
     var selectedCategory by remember { mutableStateOf(Category.LIGHT) }
@@ -49,7 +51,8 @@ fun EditingPanel(
         ToolsList(
             tools = tools,
             onSliderValueChange = onSliderValueChange,
-            settings = settings
+            settings = settings,
+            onDragEnd = { onEvent(EditorEvents.OnSliderValueChangeFinished) }
         )
     }
 }

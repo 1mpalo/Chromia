@@ -1,7 +1,6 @@
 package com.impalo.features.editor
 
 import android.net.Uri
-import android.util.Log
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import androidx.annotation.OptIn
@@ -12,21 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.media3.common.Format
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
-import androidx.media3.ui.compose.state.rememberProgressStateWithTickInterval
 import com.impalo.features.editor.playback.ChromiaVideoPlayer
 import com.impalo.features.editor.controls.EditingPanel
 import com.impalo.features.editor.controls.EditorTopBar
@@ -84,6 +74,7 @@ fun EditorScreen(
         }
     }
 
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -131,7 +122,8 @@ fun EditorScreen(
                 onSliderValueChange = { tool, newValue ->
                     onEvent(EditorEvents.OnSliderValueChange(tool, newValue))
                 },
-                settings = settings
+                settings = settings,
+                onEvent = onEvent
             )
         }
 

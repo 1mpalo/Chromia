@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +33,13 @@ import com.impalo.core.ui.theme.Neutral900
 import com.impalo.core.ui.common.ChromiaIcon
 import com.impalo.core.ui.theme.Neutral850
 import com.impalo.features.R
+import com.impalo.features.projects.SavedProject
 
 @Composable
 fun ImportScreen(
-    onOpenFootageClicked: () -> Unit
+    recentProjects: List<SavedProject>,
+    onOpenFootageClicked: () -> Unit,
+    onRecentProjectClicked: (SavedProject) -> Unit
 ) {
      Box(
         modifier = Modifier
@@ -109,6 +115,22 @@ fun ImportScreen(
                 color = MaterialTheme.colorScheme.onSurface.copy(0.6f),
                 fontSize = 13.sp
             )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(0.8f),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(recentProjects, key = { it.id }) { project ->
+                    RecentProjectCard(
+                        modifier = Modifier.width(280.dp),
+                        onClick = { onRecentProjectClicked(project) },
+                        project = project
+                    )
+                }
+            }
         }
     }
 }

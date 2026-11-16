@@ -27,6 +27,7 @@ import com.impalo.media.IdentityGlEffect
 import com.impalo.media.VideoMetadata
 import androidx.media3.common.C
 import androidx.media3.common.Format
+import androidx.media3.common.PlaybackException
 
 @OptIn(UnstableApi::class)
 @Composable

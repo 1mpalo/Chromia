@@ -1,5 +1,9 @@
 package com.impalo.media
 
+import kotlinx.serialization.Serializable
+
+
+@Serializable
 data class GradingSettings(
     val exposure: Float = 0f,
     val contrast: Float = 0f,

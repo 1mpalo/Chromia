@@ -42,3 +42,16 @@ data class SettingsState (
         vibrance = vibrance
     )
 }
+
+fun GradingSettings.toSettingsState() : SettingsState = SettingsState(
+    exposure = exposure,
+    contrast = contrast,
+    highlights = highlights,
+    shadows = shadows,
+    whites = whites,
+    blacks = blacks,
+    temp = temp,
+    tint = tint,
+    saturation = saturation,
+    vibrance = vibrance
+)

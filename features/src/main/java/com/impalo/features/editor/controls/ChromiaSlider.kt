@@ -22,7 +22,8 @@ fun CustomSlider(
     color: Color,
     range: ClosedFloatingPointRange<Float>,
     defaultValue: Float,
-    fillFrom: Float = defaultValue
+    fillFrom: Float = defaultValue,
+    onDragEnd: () -> Unit
 ) {
     require(range.start < range.endInclusive) {
         "Slider range must have a positive length"
@@ -60,7 +61,8 @@ fun CustomSlider(
                     onDrag = { change, _ ->
                         updateFromTouch(change.position.x)
                         change.consume()
-                    }
+                    },
+                    onDragEnd = onDragEnd
                 )
             }
     ) {

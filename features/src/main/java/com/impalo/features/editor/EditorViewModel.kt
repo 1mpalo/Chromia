@@ -2,10 +2,8 @@ package com.impalo.features.editor
 
 import android.content.ContentResolver
 import android.net.Uri
-import android.os.Build
 import android.provider.OpenableColumns
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.impalo.features.editor.model.ControlSpec
@@ -13,6 +11,9 @@ import com.impalo.features.editor.model.ExportState
 import com.impalo.features.editor.model.SettingsState
 import com.impalo.features.editor.model.Tool
 import com.impalo.features.editor.model.UiEffect
+import com.impalo.features.editor.model.toSettingsState
+import com.impalo.features.projects.ProjectsRepository
+import com.impalo.features.projects.SavedProject
 import com.impalo.media.VideoExporter
 import com.impalo.media.VideoMetadata
 import kotlinx.coroutines.CancellationException
@@ -24,7 +25,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class EditorViewModel : ViewModel() {
+class EditorViewModel (
+    private val projectId: String,
+    private val projectsRepository: ProjectsRepository
+) : ViewModel() {
+
+    private val _project = MutableStateFlow<SavedProject?>(null)
+    val project = _project.asStateFlow()
 
     private val _settings = MutableStateFlow<SettingsState>(SettingsState())
     val settings = _settings.asStateFlow()
@@ -40,6 +47,16 @@ class EditorViewModel : ViewModel() {
     val effectFlow = _effectFlow.asSharedFlow()
 
     private var exportJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            val savedProject = projectsRepository.getProject(projectId) ?: return@launch
+            _settings.value = savedProject.grading.toSettingsState()
+            _project.value = savedProject
+
+            Log.d("perere", "init")
+        }
+    }
 
     fun onEvent(event: EditorEvents) {
         when(event) {
@@ -58,6 +75,8 @@ class EditorViewModel : ViewModel() {
                 _videoMetadata.value = event.metadata
                 metadataUri = event.uri
             }
+
+            is EditorEvents.OnSliderValueChangeFinished -> { onSavedProject() }
         }
     }
 
@@ -176,6 +195,17 @@ class EditorViewModel : ViewModel() {
                     exportJob = null
                 }
             }
+        }
+    }
+
+    private fun onSavedProject() {
+        val newProject = project.value?.copy(
+            updatedAtMs = System.currentTimeMillis(),
+            grading = settings.value.toGradingSettings()
+        )
+        // TODO обработай null проекта
+        viewModelScope.launch {
+            newProject?.let{ projectsRepository.saveProject(it) }
         }
     }
 }
