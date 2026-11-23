@@ -1,6 +1,9 @@
 package com.impalo.features.editor.model
 
+import com.impalo.media.CurveChannel
+import com.impalo.media.CurvePoint
 import com.impalo.media.GradingSettings
+import com.impalo.media.defaultCurves
 
 data class SettingsState (
     val exposure: Float = 0f,
@@ -13,6 +16,7 @@ data class SettingsState (
     val tint: Float = 0f,
     val saturation: Float = 100f,
     val vibrance: Float = 0f,
+    val curves: Map<CurveChannel, List<CurvePoint>> = defaultCurves()
 ) {
     fun valueFor(tool: Tool): Float = when (tool) {
         Tool.EXPOSURE -> exposure
@@ -39,7 +43,8 @@ data class SettingsState (
         temp = temp,
         tint = tint,
         saturation = saturation,
-        vibrance = vibrance
+        vibrance = vibrance,
+        curves = curves
     )
 }
 
@@ -53,5 +58,6 @@ fun GradingSettings.toSettingsState() : SettingsState = SettingsState(
     temp = temp,
     tint = tint,
     saturation = saturation,
-    vibrance = vibrance
+    vibrance = vibrance,
+    curves = curves
 )

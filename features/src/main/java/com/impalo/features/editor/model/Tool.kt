@@ -1,5 +1,7 @@
 package com.impalo.features.editor.model
 
+import com.impalo.media.CurveChannel
+
 enum class Tool(
     val title: String,
     val category: Category,
@@ -91,22 +93,30 @@ enum class Tool(
     RGB(
         title = "RGB",
         category = Category.CURVES,
-        control = ControlSpec.Curve
+        control = ControlSpec.Curve(
+            CurveChannel.RGB
+        )
     ),
     R(
         title = "R",
         category = Category.CURVES,
-        control = ControlSpec.Curve
+        control = ControlSpec.Curve(
+            CurveChannel.R
+        )
     ),
     G(
         title = "G",
         category = Category.CURVES,
-        control = ControlSpec.Curve
+        control = ControlSpec.Curve(
+            CurveChannel.G
+        )
     ),
     B(
         title = "B",
         category = Category.CURVES,
-        control = ControlSpec.Curve
+        control = ControlSpec.Curve(
+            CurveChannel.B
+        )
     ),
 }
 
@@ -119,6 +129,6 @@ sealed interface ControlSpec {
         val decimalPlaces: Int = 0
     ) : ControlSpec
 
-    data object Curve: ControlSpec
+    data class Curve (val channel: CurveChannel): ControlSpec
     data object LutPicker: ControlSpec
 }

@@ -102,6 +102,11 @@ private class IdentityShaderProgram(
 
             val grading = settings.snapshot()
 
+            val rgbPoint = grading.curves.getValue(CurveChannel.RGB)[1]
+            val redPoint = grading.curves.getValue(CurveChannel.R)[1]
+            val greenPoint = grading.curves.getValue(CurveChannel.G)[1]
+            val bluePoint = grading.curves.getValue(CurveChannel.B)[1]
+
             if (grading.temp != lastTemperature || grading.tint != lastTint) {
                 temperatureLmsScale =
                     TemperatureAdaptation.calculateLmsScale(
@@ -162,6 +167,26 @@ private class IdentityShaderProgram(
             glProgram.setFloatUniform(
                 "uSaturation",
                 grading.saturation
+            )
+
+            glProgram.setFloatsUniform(
+                "uRgbCurvePoint",
+                floatArrayOf(rgbPoint.x, rgbPoint.y)
+            )
+
+            glProgram.setFloatsUniform(
+                "uRedCurvePoint",
+                floatArrayOf(redPoint.x, redPoint.y)
+            )
+
+            glProgram.setFloatsUniform(
+                "uGreenCurvePoint",
+                floatArrayOf(greenPoint.x, greenPoint.y)
+            )
+
+            glProgram.setFloatsUniform(
+                "uBlueCurvePoint",
+                floatArrayOf(bluePoint.x, bluePoint.y)
             )
 
             glProgram.bindAttributesAndUniforms()

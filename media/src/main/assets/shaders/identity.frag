@@ -15,6 +15,10 @@ uniform float uBlacks;
 uniform vec3 uWhiteBalanceLmsScale;
 uniform float uSaturation;
 uniform float uVibrance;
+uniform vec2 uRgbCurvePoint;
+uniform vec2 uRedCurvePoint;
+uniform vec2 uBlueCurvePoint;
+uniform vec2 uGreenCurvePoint;
 
 out vec4 fragColor;
 
@@ -48,6 +52,8 @@ vec3 applyBlacks(vec3 linearRgb, float blacksAmount);
 vec3 applyWhiteBalance(vec3 linearRgb);
 vec3 applySaturation(vec3 linearRgb, float saturationAmount);
 vec3 applyVibrance(vec3 linearRgb, float vibranceAmount);
+float applyCurve(float value, vec2 point);
+vec3 applyCurves(vec3 encodedRgb);
 
 void main() {
     vec4 sourceColor = texture(uTexSampler, vTexCoord);
@@ -70,7 +76,7 @@ void main() {
         uWhites == 0.0 &&
         uBlacks == 0.0
     ) {
-        fragColor = sourceColor;
+        fragColor = vec4(applyCurves(sourceColor.rgb), sourceColor.a);
         return;
     }
 
@@ -114,9 +120,8 @@ void main() {
         max(linearRgb, vec3(0.0))
     );
 
-
     fragColor = vec4(
-        clamp(encodedRgb, 0.0, 1.0),
+        applyCurves(clamp(encodedRgb, 0.0, 1.0)),
         sourceColor.a
     );
 }
@@ -328,4 +333,32 @@ vec3 applyVibrance(vec3 linearRgb, float vibranceAmount) {
     float saturationFactor = 1.0 + vibranceAmount * vibranceWeight;
 
     return applySaturation(linearRgb, saturationFactor);
+}
+
+float applyCurve(float channel, vec2 point) {
+    if (point.x == point.y) {
+        return channel;
+    }
+
+    if (channel <= point.x) {
+        float t = channel / point.x;
+        return mix(0.0, point.y, t);
+    }
+
+    float t = (channel - point.x) / (1.0 - point.x);
+    return mix(point.y, 1.0, t);
+}
+
+vec3 applyCurves(vec3 encodedRgb) {
+    vec3 afterRgb = vec3(
+            applyCurve(encodedRgb.r, uRgbCurvePoint),
+            applyCurve(encodedRgb.g, uRgbCurvePoint),
+            applyCurve(encodedRgb.b, uRgbCurvePoint)
+    );
+
+    return vec3(
+            applyCurve(afterRgb.r, uRedCurvePoint),
+            applyCurve(afterRgb.g, uGreenCurvePoint),
+            applyCurve(afterRgb.b, uBlueCurvePoint)
+    );
 }

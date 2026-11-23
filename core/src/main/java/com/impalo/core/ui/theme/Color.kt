@@ -22,3 +22,8 @@ val Red900 = Color(0xFF93000A)
 val Red950 = Color(0xFF690005)
 
 val Black = Color(0xFF000000)
+
+val CurveRgb = Neutral100
+val CurveRed = Color(0xFFFF766F)
+val CurveGreen = Color(0xFF59E6A3)
+val CurveBlue = Color(0xFF70A8FF)

@@ -18,13 +18,17 @@ import com.impalo.features.editor.EditorEvents
 import com.impalo.features.editor.model.Category
 import com.impalo.features.editor.model.SettingsState
 import com.impalo.features.editor.model.Tool
+import com.impalo.media.CurveChannel
+import com.impalo.media.CurvePoint
 
 @Composable
 fun EditingPanel(
     modifier: Modifier = Modifier,
     onSliderValueChange: (tool: Tool, newValue: Float) -> Unit,
+    onCurvePointMoved: (channel: CurveChannel, index: Int, value: CurvePoint) -> Unit,
+    onDragEnd: () -> Unit,
+    onCurveDragEnd: () -> Unit,
     settings: SettingsState,
-    onEvent: (EditorEvents) -> Unit
 ) {
 
     var selectedCategory by remember { mutableStateOf(Category.LIGHT) }
@@ -51,8 +55,10 @@ fun EditingPanel(
         ToolsList(
             tools = tools,
             onSliderValueChange = onSliderValueChange,
+            onCurvePointMoved = onCurvePointMoved,
             settings = settings,
-            onDragEnd = { onEvent(EditorEvents.OnSliderValueChangeFinished) }
+            onDragEnd = onDragEnd,
+            onCurveDragEnd = onCurveDragEnd
         )
     }
 }

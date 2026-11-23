@@ -14,6 +14,10 @@ uniform float uBlacks;
 uniform float uVibrance;
 uniform float uSaturation;
 uniform vec3 uWhiteBalanceLmsScale;
+uniform vec2 uRgbCurvePoint;
+uniform vec2 uRedCurvePoint;
+uniform vec2 uBlueCurvePoint;
+uniform vec2 uGreenCurvePoint;
 
 out vec4 fragColor;
 
@@ -48,6 +52,8 @@ vec3 applyWhites(vec3 linearRgb2020, float whitesAmount);
 vec3 applyBlacks(vec3 linearRgb2020, float blacksAmount);
 vec3 applySaturation(vec3 linearRgb2020, float saturationAmount);
 vec3 applyVibrance(vec3 linearRgb2020, float vibranceAmount);
+float applyCurve(float value, vec2 point);
+vec3 applyCurves(vec3 encodedRgb);
 
 void main() {
     vec4 sourceColor = texture(uTexSampler, vTexCoord);
@@ -76,8 +82,13 @@ void main() {
     float luminance = getLuminance2020(positive2020);
     vec3 mapped2020 = positive2020 / (1.0 + luminance);
     vec3 linear709 = clamp(BT2020_TO_BT709 * mapped2020, 0.0, 1.0);
+    
+    vec3 encoded709 = encodeBt709(linear709);
 
-    fragColor = vec4(encodeBt709(linear709), sourceColor.a);
+    fragColor = vec4(
+        applyCurves(clamp(encoded709, 0.0, 1.0)),
+        sourceColor.a
+    );
 }
 
 float decodeSamsungLogChannel(float code) {
@@ -226,4 +237,32 @@ vec3 applyVibrance(vec3 linearRgb2020, float vibranceAmount) {
     float weight = clamp(minChannel / maxChannel, 0.0, 1.0);
 
     return applySaturation(linearRgb2020, 1.0 + vibranceAmount * weight);
+}
+
+float applyCurve(float channel, vec2 point) {
+    if (point.x == point.y) {
+        return channel;
+    }
+
+    if (channel <= point.x) {
+        float t = channel / point.x;
+        return mix(0.0, point.y, t);
+    }
+
+    float t = (channel - point.x) / (1.0 - point.x);
+    return mix(point.y, 1.0, t);
+}
+
+vec3 applyCurves(vec3 encodedRgb) {
+    vec3 afterRgb = vec3(
+            applyCurve(encodedRgb.r, uRgbCurvePoint),
+            applyCurve(encodedRgb.g, uRgbCurvePoint),
+            applyCurve(encodedRgb.b, uRgbCurvePoint)
+    );
+
+    return vec3(
+            applyCurve(afterRgb.r, uRedCurvePoint),
+            applyCurve(afterRgb.g, uGreenCurvePoint),
+            applyCurve(afterRgb.b, uBlueCurvePoint)
+    );
 }

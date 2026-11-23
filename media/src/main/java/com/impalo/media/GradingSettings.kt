@@ -15,4 +15,5 @@ data class GradingSettings(
     val tint: Float = 0f,
     val saturation: Float = 100f,
     val vibrance: Float = 0f,
+    val curves: Map<CurveChannel, List<CurvePoint>> = defaultCurves()
 )

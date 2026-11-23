@@ -14,6 +14,8 @@ import com.impalo.features.editor.model.UiEffect
 import com.impalo.features.editor.model.toSettingsState
 import com.impalo.features.projects.ProjectsRepository
 import com.impalo.features.projects.SavedProject
+import com.impalo.media.CurveChannel
+import com.impalo.media.CurvePoint
 import com.impalo.media.VideoExporter
 import com.impalo.media.VideoMetadata
 import kotlinx.coroutines.CancellationException
@@ -54,7 +56,6 @@ class EditorViewModel (
             _settings.value = savedProject.grading.toSettingsState()
             _project.value = savedProject
 
-            Log.d("perere", "init")
         }
     }
 
@@ -62,6 +63,10 @@ class EditorViewModel (
         when(event) {
             is EditorEvents.OnSliderValueChange -> {
                 onToolValueChange(tool = event.tool, newValue = event.newValue)
+            }
+
+            is EditorEvents.OnCurveValueChange -> {
+                onCurveValueChange(channel = event.channel, index = event.index, point = event.point)
             }
 
             is EditorEvents.OnExportClicked -> {
@@ -77,6 +82,7 @@ class EditorViewModel (
             }
 
             is EditorEvents.OnSliderValueChangeFinished -> { onSavedProject() }
+            is EditorEvents.OnCurveValueChangeFinished -> { onSavedProject() }
         }
     }
 
@@ -151,6 +157,23 @@ class EditorViewModel (
         }
     }
 
+    private fun onCurveValueChange(
+        channel: CurveChannel,
+        index: Int,
+        point: CurvePoint
+    ) {
+        _settings.update { state ->
+            val points = state.curves.getValue(channel)
+            if (index <= 0 || index >= points.lastIndex) return@update state
+
+            val updatedPoints = points.toMutableList().apply {
+                this[index] = point
+            }
+
+            state.copy(curves = state.curves + (channel to updatedPoints))
+        }
+    }
+
     private fun onExportClicked(
         videoExporter: VideoExporter,
         uri: Uri
@@ -203,6 +226,7 @@ class EditorViewModel (
             updatedAtMs = System.currentTimeMillis(),
             grading = settings.value.toGradingSettings()
         )
+
         // TODO обработай null проекта
         viewModelScope.launch {
             newProject?.let{ projectsRepository.saveProject(it) }

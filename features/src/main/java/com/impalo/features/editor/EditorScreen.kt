@@ -122,8 +122,12 @@ fun EditorScreen(
                 onSliderValueChange = { tool, newValue ->
                     onEvent(EditorEvents.OnSliderValueChange(tool, newValue))
                 },
+                onCurvePointMoved = { channel, index, point ->
+                    onEvent(EditorEvents.OnCurveValueChange(channel, index, point))
+                },
                 settings = settings,
-                onEvent = onEvent
+                onDragEnd = { onEvent(EditorEvents.OnSliderValueChangeFinished) },
+                onCurveDragEnd = { onEvent(EditorEvents.OnCurveValueChangeFinished) }
             )
         }
 
